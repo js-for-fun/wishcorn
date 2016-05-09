@@ -11,19 +11,14 @@ export default class CornsController {
 	}
 
 	async init() {
-		try {
-			await PornhubService.init();
-		} catch (e) {
-			console.log(e);
-			throw e;
-		}
+		await PornhubService.init();
 		this.router.use(this.getOrCreateMiddleware.bind(this));
 		this.router.get('/random', this.requestRandom.bind(this));
 		this.router.post('/increment', this.requestIncrement.bind(this));
 	}
 
 	predictCategory(categories) {
-		const keys = Object.keys(categories);
+		const keys = _.shuffle(Object.keys(categories));
 		const sum = keys.reduce((ac, item) => ac + categories[item], 0);
 		for (let i = 0; i < keys.length; ++i) {
 			const key = keys[i];
@@ -37,7 +32,7 @@ export default class CornsController {
 
 	async requestIncrement(req, res, next) {
 		const categoryName = req.body.category;
-		if (!_.indexOf(PornhubService.categories, { name: categoryName })) {
+		if (!_.find(PornhubService.categories, { name: categoryName })) {
 			return next('Unknown category!');
 		}
 		await User.update({
@@ -75,7 +70,6 @@ export default class CornsController {
 
 	async requestRandom(req, res, next) {
 		const categoryName = this.predictCategory(req.user.categories);
-
 		const category = _.find(PornhubService.categories, { name: categoryName });
 		if (!category) {
 			return next('Unknown category.');

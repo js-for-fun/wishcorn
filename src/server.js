@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 
 import CornsController from './controllers/corns';
 
@@ -10,6 +11,8 @@ export default class Server {
 	constructor() {
 		this.app = express();
 		this.app.use(cookieParser());
+		this.app.use(bodyParser());
+
 		this.port = 3000;
 
 		mongoose.connect('localhost/wishcorn');
