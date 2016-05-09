@@ -7,7 +7,13 @@ export default class CornsController {
 		this.init();
 	}
 
-	init() {
+	async init() {
+		try {
+			await PornhubService.init();
+		} catch(e) {
+			console.log(e);
+			throw e;
+		}
 		this.router.get('/random', (...args) => {
 			this.requestRandom(...args);
 		});
@@ -15,8 +21,8 @@ export default class CornsController {
 
 	async requestRandom(req, res) {
 		try {
-			await PornhubService.getCategories();
-			res.send('some random');
+			const videos = await PornhubService.getVideosByCategory(PornhubService.categories[0]);
+			res.send(videos);
 		} catch (e) {
 			console.log(e);
 			next(e);
