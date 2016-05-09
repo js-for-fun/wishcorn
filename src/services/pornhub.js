@@ -56,6 +56,7 @@ export default class PornhubService {
 				thumbsCount: $('img', el).attr('data-thumbs'),
 				vkey,
 				iframe: IFRAME_PATTERN.replace('{{vkey}}', vkey),
+				category: category.name,
 			});
 		});
 
