@@ -1,4 +1,5 @@
 import express from 'express';
+import PornhubService from '../services/pornhub';
 
 export default class CornsController {
 	constructor() {
@@ -7,10 +8,18 @@ export default class CornsController {
 	}
 
 	init() {
-		this.router.get('/random', this.requestRandom);
+		this.router.get('/random', (...args) => {
+			this.requestRandom(...args);
+		});
 	}
 
-	requestRandom(req, res) {
-		res.send('some random');
+	async requestRandom(req, res) {
+		try {
+			await PornhubService.getCategories();
+			res.send('some random');
+		} catch (e) {
+			console.log(e);
+			next(e);
+		}
 	}
 }
