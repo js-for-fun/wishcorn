@@ -19,9 +19,9 @@ export default class PornhubService {
 
 		const results = [];
 
-		$('.category-wrapper').each(() => {
+		$('.category-wrapper').each((el) => {
 			results.push({
-				name: $('h5 strong', this).text(),
+				name: $('h5 strong', el).text(),
 			});
 		});
 
