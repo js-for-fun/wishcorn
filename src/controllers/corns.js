@@ -10,7 +10,7 @@ export default class CornsController {
 	async init() {
 		try {
 			await PornhubService.init();
-		} catch(e) {
+		} catch (e) {
 			console.log(e);
 			throw e;
 		}
@@ -19,9 +19,22 @@ export default class CornsController {
 		});
 	}
 
+	predictCategory(categories) {
+		const keys = Object.keys(categories);
+		const sum = keys.reduce((ac, item) => ac + categories[item], 0);
+		for (let i = 0; i < keys.length; ++i) {
+			const key = keys[i];
+			const probability = categories[key] / sum;
+			if (probability > Math.random()) {
+				return key;
+			}
+		}
+		return keys[keys.length - 1];
+	}
+
 	async requestRandom(req, res) {
 		try {
-			const videos = await PornhubService.getVideosByCategory(PornhubService.categories[0]);
+			const videos = await PornhubService.getRandomVideoFromCategory(PornhubService.categories[1]);
 			res.send(videos);
 		} catch (e) {
 			console.log(e);
