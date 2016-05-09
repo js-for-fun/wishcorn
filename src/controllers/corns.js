@@ -1,6 +1,8 @@
 import express from 'express';
 import PornhubService from '../services/pornhub';
 
+import User from '../models/users';
+
 export default class CornsController {
 	constructor() {
 		this.router = new express.Router();
@@ -32,7 +34,29 @@ export default class CornsController {
 		return keys[keys.length - 1];
 	}
 
-	async requestRandom(req, res) {
+	async requestRandom(req, res, next) {
+		let user;
+
+		const userCategories = PornhubService.categories.reduce((ac, item) => {
+			ac[item.name] = 1;
+			return ac;
+		}, {});
+
+		console.log(userCategories);
+
+		if (!req.cookies.id) {
+			user = await User.createUser({
+				categories: {
+					foo: 'bar',
+				},
+			});
+
+			res.cookie('id', user.id);
+		} else {
+			user = await User.findOne({ id: req.cookies.id }).lean();
+			if (!user) next(new Error('Fuck you!'));
+		}
+
 		try {
 			const videos = await PornhubService.getRandomVideoFromCategory(PornhubService.categories[1]);
 			res.send(videos);

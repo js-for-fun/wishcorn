@@ -4,4 +4,8 @@ const schema = new mongoose.Schema({
 	categories: {},
 });
 
-module.exports = new mongoose.Model('users', schema);
+schema.statics.createUser = async function createUser(user) {
+	return await this.create(user);
+};
+
+module.exports = mongoose.model('users', schema);
