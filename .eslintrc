@@ -2,10 +2,11 @@
   "parser": "babel-eslint",
   "rules": {
     "strict": 1,
-    "indent": [2, "tab"]
+    "indent": [2, "tab"],
+    "no-param-reassign": 0,
+    "no-underscore-dangle": 0
   },
   "extends": "airbnb/base",
   "globals": {
-      "_": true
   }
 }

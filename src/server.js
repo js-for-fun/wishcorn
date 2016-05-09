@@ -12,7 +12,7 @@ export default class Server {
 		this.app.use(cookieParser());
 		this.port = 3000;
 
-		mongoose.connect('localhost');
+		mongoose.connect('localhost/wishcorn');
 	}
 
 	async init() {

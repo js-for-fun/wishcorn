@@ -1,5 +1,6 @@
 import express from 'express';
 import PornhubService from '../services/pornhub';
+import _ from 'lodash';
 
 import User from '../models/users';
 
@@ -16,9 +17,9 @@ export default class CornsController {
 			console.log(e);
 			throw e;
 		}
-		this.router.get('/random', (...args) => {
-			this.requestRandom(...args);
-		});
+		this.router.use(this.getOrCreateMiddleware.bind(this));
+		this.router.get('/random', this.requestRandom.bind(this));
+		this.router.post('/increment', this.requestIncrement.bind(this));
 	}
 
 	predictCategory(categories) {
@@ -34,35 +35,57 @@ export default class CornsController {
 		return keys[keys.length - 1];
 	}
 
-	async requestRandom(req, res, next) {
+	async requestIncrement(req, res, next) {
+		const categoryName = req.body.category;
+		if (!_.indexOf(PornhubService.categories, { name: categoryName })) {
+			return next('Unknown category!');
+		}
+		await User.update({
+			_id: req.user._id,
+		}, {
+			$inc: {
+				[`categories.${categoryName}`]: 1,
+			},
+		});
+
+		return res.send({ ok: true });
+	}
+
+	async getOrCreateMiddleware(req, res, next) {
 		let user;
 
-		const userCategories = PornhubService.categories.reduce((ac, item) => {
-			ac[item.name] = 1;
-			return ac;
-		}, {});
-
-		console.log(userCategories);
-
 		if (!req.cookies.id) {
-			user = await User.createUser({
-				categories: {
-					foo: 'bar',
-				},
-			});
+			const userCategories = PornhubService.categories.reduce((ac, item) => {
+				ac[item.name] = 1;
+				return ac;
+			}, {});
 
-			res.cookie('id', user.id);
+			user = await User.createUser({
+				categories: userCategories,
+			});
+			req.user = user;
+			res.cookie('id', user._id);
 		} else {
-			user = await User.findOne({ id: req.cookies.id }).lean();
+			user = await User.findOne({ _id: req.cookies.id }).lean();
+			req.user = user;
 			if (!user) next(new Error('Fuck you!'));
 		}
+		next();
+	}
 
+	async requestRandom(req, res, next) {
+		const categoryName = this.predictCategory(req.user.categories);
+
+		const category = _.find(PornhubService.categories, { name: categoryName });
+		if (!category) {
+			return next('Unknown category.');
+		}
 		try {
-			const videos = await PornhubService.getRandomVideoFromCategory(PornhubService.categories[1]);
-			res.send(videos);
+			const videos = await PornhubService.getRandomVideoFromCategory(category);
+			return res.send(videos);
 		} catch (e) {
 			console.log(e);
-			next(e);
+			return next(e);
 		}
 	}
 }
