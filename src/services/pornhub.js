@@ -7,40 +7,26 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like
 
 const IFRAME_PATTERN = '<iframe src="http://www.pornhub.com/embed/{{vkey}}" frameborder="0" width="560" height="340" scrolling="no"></iframe>';
 
+// const PAGE_VIDEO_COUNT = 32;
+
 export default class PornhubService {
 
 	static async init() {
 		PornhubService.categories = await PornhubService.getCategories();
 	}
 
-	async getRandom() {
-		// await request('')
+	static async getRandomVideoFromCategory(category) {
+		if (!_.isObject(category)) {
+			throw new Error('Category should be object.');
+		}
+		const randomPage = Math.floor(Math.random() * 2) + 1;
+
+		const videos = await PornhubService.getVideosByCategory(category, randomPage);
+		const randomVideo = Math.floor(Math.random() * videos.length);
+		return videos[randomVideo];
 	}
 
-	// static async getVideo(video) {
-	// 	if (!_.isObject(video)) {
-	// 		throw new Error('Category should be object.');
-	// 	}
-	//
-	// 	const html = await request.get({
-	// 		url: url.resolve('http://www.pornhub.com/', video.href),
-	// 		headers: {
-	// 			'User-Agent': USER_AGENT,
-	// 		},
-	// 	});
-	//
-	// 	const $ = cheerio.load(html, {
-	// 		ignoreWhitespace: true,
-	// 	});
-	//
-	// 	console.log($('.embed').html());
-	//
-	// 	return $('.embed textarea').text();
-	//
-	// 	// await request(video.url)
-	// }
-
-	static async getVideosByCategory(category) {
+	static async getVideosByCategory(category, page) {
 		if (!_.isObject(category)) {
 			throw new Error('Category should be object.');
 		}
@@ -49,6 +35,9 @@ export default class PornhubService {
 			url: url.resolve('http://www.pornhub.com/', category.href),
 			headers: {
 				'User-Agent': USER_AGENT,
+			},
+			qs: {
+				page: page || 1,
 			},
 		});
 
